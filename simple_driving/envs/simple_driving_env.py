@@ -127,7 +127,7 @@ class SimpleDrivingEnv(gym.Env):
             ox = self.np_random.uniform(-4, 4)
             oy = self.np_random.uniform(-4, 4)
             self.obstacle_positions.append((ox, oy))
-            obstacle_id = self._p.loadURDF(fileName=obstacle_path, basePosition=[ox, oy, 0])
+            obstacle_id = self._p.loadURDF(fileName=https://github.com/MalinduBethmage/Simple-Car-Env/blob/main/simple_driving/resources/simplegoal.urdf, basePosition=[ox, oy, 0])
             self.obstacle_ids.append(obstacle_id)
 
         # Get observation to return
