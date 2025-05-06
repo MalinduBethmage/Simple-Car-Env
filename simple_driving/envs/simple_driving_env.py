@@ -84,9 +84,11 @@ class SimpleDrivingEnv(gym.Env):
             #print("reached goal")
             self.done = True
             self.reached_goal = True
+            reward += 50    # Add bonus reward for reaching goal
 
         ob = car_ob
-        return ob, reward, self.done, dict()
+        info = {"goal_reached": self.reached_goal}    # can be used for info
+        return ob, reward, self.done, info    # changed from dict() to info
 
     def seed(self, seed=None):
         self.np_random, seed = gym.utils.seeding.np_random(seed)
