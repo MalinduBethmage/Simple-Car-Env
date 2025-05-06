@@ -8,6 +8,7 @@ from simple_driving.resources.plane import Plane
 from simple_driving.resources.goal import Goal
 import matplotlib.pyplot as plt
 import time
+import os    # needed for Part 4
 
 RENDER_HEIGHT = 720
 RENDER_WIDTH = 960
@@ -115,6 +116,20 @@ class SimpleDrivingEnv(gym.Env):
         # Visual element of the goal
         self.goal_object = Goal(self._p, self.goal)
 
+        # Part 4 - Adding obstacles
+        obstacle_path = os.path.join(os.path.dirname(__file__), "simplegoal.urdf")
+    
+        self.num_obstacles = 2    # Adding 2 new obstacles
+        self.obstacle_ids = []
+        self.obstacle_positions = []
+    
+        for _ in range(self.num_obstacles):
+            ox = self.np_random.uniform(-4, 4)
+            oy = self.np_random.uniform(-4, 4)
+            self.obstacle_positions.append((ox, oy))
+            obstacle_id = self._p.loadURDF(fileName=obstacle_path, basePosition=[ox, oy, 0])
+            self.obstacle_ids.append(obstacle_id)
+
         # Get observation to return
         carpos = self.car.get_observation()
 
@@ -183,10 +198,26 @@ class SimpleDrivingEnv(gym.Env):
         carpos, carorn = self._p.getBasePositionAndOrientation(self.car.car)
         goalpos, goalorn = self._p.getBasePositionAndOrientation(self.goal_object.goal)
         invCarPos, invCarOrn = self._p.invertTransform(carpos, carorn)
-        goalPosInCar, goalOrnInCar = self._p.multiplyTransforms(invCarPos, invCarOrn, goalpos, goalorn)
 
-        observation = [goalPosInCar[0], goalPosInCar[1]]
-        return observation
+        # Updated for Task4 to get closest obstacle position
+        # Transform goal to car frame
+        goalPosInCar, _ = self._p.multiplyTransforms(invCarPos, invCarOrn, goalpos, goalorn)
+        x_goal_rel, y_goal_rel = goalPosInCar[0], goalPosInCar[1]
+    
+        # Default if no obstacles
+        x_obs_rel, y_obs_rel = 0.0, 0.0
+        min_dist = float("inf")
+    
+        for obs_x, obs_y in getattr(self, "obstacle_positions", []):
+            obspos_world = [obs_x, obs_y, 0]
+            obsPosInCar, _ = self._p.multiplyTransforms(invCarPos, invCarOrn, obspos_world, [0, 0, 0, 1])
+            dist = math.sqrt(obsPosInCar[0] ** 2 + obsPosInCar[1] ** 2)
+    
+            if dist < min_dist:
+                x_obs_rel, y_obs_rel = obsPosInCar[0], obsPosInCar[1]
+                min_dist = dist
+    
+        return [x_goal_rel, y_goal_rel, x_obs_rel, y_obs_rel]
 
     def _termination(self):
         return self._envStepCounter > 2000
