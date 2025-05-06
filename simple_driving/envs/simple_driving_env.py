@@ -117,7 +117,13 @@ class SimpleDrivingEnv(gym.Env):
         self.goal_object = Goal(self._p, self.goal)
 
         # Part 4 - Adding obstacles
-        obstacle_path = os.path.join(os.path.dirname(__file__), "simplegoal.urdf")
+        obstacle_path = os.path.join(
+            os.path.dirname(__file__),    # .../envs/
+            "..",                         # move up to repo root
+            "resources",                  # into /resources
+            "simplegoal.urdf"             # target file
+        )
+        obstacle_path = os.path.abspath(obstacle_path)  # convert to absolute path
     
         self.num_obstacles = 2    # Adding 2 new obstacles
         self.obstacle_ids = []
@@ -127,7 +133,7 @@ class SimpleDrivingEnv(gym.Env):
             ox = self.np_random.uniform(-4, 4)
             oy = self.np_random.uniform(-4, 4)
             self.obstacle_positions.append((ox, oy))
-            obstacle_id = self._p.loadURDF(fileName=https://github.com/MalinduBethmage/Simple-Car-Env/blob/main/simple_driving/resources/simplegoal.urdf, basePosition=[ox, oy, 0])
+            obstacle_id = self._p.loadURDF(fileName=obstacle_path, basePosition=[ox, oy, 0])
             self.obstacle_ids.append(obstacle_id)
 
         # Get observation to return
